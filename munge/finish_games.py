@@ -98,7 +98,11 @@ def get_final_ownership(gnu_sgf_outputfile, board_size = 19):
     sgfContents = sgffile.read()
     sgffile.close()
 
-    sgf = sgfmill.sgf.Sgf_game.from_string( sgfContents )
+    try:
+        sgf = sgfmill.sgf.Sgf_game.from_string( sgfContents )
+    except ValueError:
+        print('Failed to find SGF data, ignoring')
+        return None, None
 
     if sgf.get_size() != board_size:
         print(('boardsize not %d, ignoring' %board_size ))

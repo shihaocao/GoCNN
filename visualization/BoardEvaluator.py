@@ -56,7 +56,7 @@ class BoardEvaluator:
         #the model was trained on predicting ownership of color to move
         #here we swap this back to predicting ownership of black
         if color_to_move == "w":
-            for i in xrange(len(predicted_ownership)):
-                for j in xrange(len(predicted_ownership)):
+            for i in range(len(predicted_ownership)):
+                for j in range(len(predicted_ownership)):
                     predicted_ownership[i][j] = 1 - predicted_ownership[i][j]
         return predicted_ownership

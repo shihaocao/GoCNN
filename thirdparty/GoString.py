@@ -4,7 +4,7 @@
 # v. 2.0. If a copy of the MPL was not distributed with this file, You can 
 # obtain one at http://mozilla.org/MPL/2.0/.
 
-import Bag2d
+from . import Bag2d
 
 # represents a string of contiguous pieces of one color on the board
 # including we have a list of all its liberties, and therefore their count

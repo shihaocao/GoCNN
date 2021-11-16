@@ -9,7 +9,7 @@ a new random sgf from the directory. When the predict ownership method is called
 we return the models board evaluation prediction on the current state of the board.
 '''
 
-from __future__ import print_function
+
 import sys
 import re
 import random
@@ -46,8 +46,8 @@ def coord_to_str(row, col):
 #Formats a valid response string that can be fed into gogui as response to the 'predict_ownership' command
 def influence_str(ownership_matrix):
     rtn_str = "INFLUENCE "
-    for i in xrange(len(ownership_matrix)):
-        for j in xrange(len(ownership_matrix)):
+    for i in range(len(ownership_matrix)):
+        for j in range(len(ownership_matrix)):
             rtn_str+= "%s %.1lf " %(coord_to_str(i,j), 2*(ownership_matrix[i][j] - .5)) #convert to [-1,1] scale
             #rtn_str+= " %.1lf\n" %(ownership_matrix[i][j])
     return rtn_str
@@ -68,7 +68,7 @@ def gtp_io():
     output_file.write("intializing\n")
     while True:
         try:
-            line = raw_input().strip()
+            line = input().strip()
             print(line,file=sys.stderr)
             output_file.write(line + "\n")
         except EOFError:

@@ -1,5 +1,5 @@
 #GoDriver.py
-from __future__ import print_function
+
 import numpy as np
 import sys
 
@@ -7,7 +7,7 @@ import sys
 sys.path.append("../thirdparty")
 
 import GoBoard #this is in the thirdparty directory
-import gomill.sgf
+import sgfmill.sgf
 from  BoardEvaluator import BoardEvaluator
 
 def _swap_color(color):
@@ -18,7 +18,7 @@ def _swap_color(color):
     raise ValueError("color needs to be w or b")
 
 '''
-GoDriver has a pointer to a gomill.Sgf_game object which contains the game tree defined by an sgf file.
+GoDriver has a pointer to a sgfmill.Sgf_game object which contains the game tree defined by an sgf file.
 The current position in the file in maintained by the Sgf_game.main_sequence_iter() iterator.
 It also contains a BoardEvaluator object which will load the tensorflow model and be able to make predictions
 based on the current board. '''
@@ -32,7 +32,7 @@ class GoDriver:
     def load_sgf_file(self, sgf_filepath):
         with open(sgf_filepath, 'r') as sgf_file:
             sgfContents = sgf_file.read()
-        self.sgf = gomill.sgf.Sgf_game.from_string( sgfContents)
+        self.sgf = sgfmill.sgf.Sgf_game.from_string( sgfContents)
         print("%s loaded. Winner: %s"%(sgf_filepath, self.sgf.get_winner()), file=sys.stderr)
         self.board = GoBoard.GoBoard(self.BOARD_SIZE)
         self.sgf_iterator = self.sgf.main_sequence_iter()
@@ -43,10 +43,10 @@ class GoDriver:
 
     def gen_move(self):
         try:
-            it = self.sgf_iterator.next()
+            it = next(self.sgf_iterator)
             color, move = it.get_move()
             if move is None: #sometimes the first move isn't defined
-                it = self.sgf_iterator.next()
+                it = next(self.sgf_iterator)
                 color, move = it.get_move()
 
         except StopIteration: #at the end of the file

@@ -20,25 +20,25 @@
 #See main at bottom of file. This file will recursively traverse a directory for all .sgf files and convert the moves
 #in those games to a binary format which can be used downstream for a CNN.
 
-from __future__ import absolute_import, division
+
 
 import argparse
 import json
 import sys,os,time, os.path
 import shutil
-from ..thirdparty import GoBoard
+import GoBoard
 import signal
 from os import sys, path
 #mydir = path.dirname(path.abspath(__file__))
 #print( mydir )
-#sys.path.append(mydir + '/gomill' )
-import gomill
-import gomill.sgf
+#sys.path.append(mydir + '/sgfmill' )
+import sgfmill
+import sgfmill.sgf
 
 import random
 import numpy as np
-from . import finish_games
-from . import bit_writer
+import finish_games
+import bit_writer
 
 
 def addToDataFile( datafile, color, move, goBoard, ownership, black_ownership, white_ownership ):
@@ -65,9 +65,11 @@ def addToDataFile( datafile, color, move, goBoard, ownership, black_ownership, w
 
     (row,col) = move
     enemyColor = goBoard.otherColor( color )
-    datafile.write('GO') # write something first, so we can sync/validate on reading
-    datafile.write(chr(row)) # write the move
-    datafile.write(chr(col))
+    datafile.write('GO'.encode('utf-8')) # write something first, so we can sync/validate on reading
+    # print(row.to_bytes(1, 'big'))
+    # print(type(row.to_bytes(1, 'big')))
+    datafile.write(row.to_bytes(1, 'big')) # write the move
+    datafile.write(col.to_bytes(1, 'big'))
 
     #If we are doing ownership, write the final state of the board as sequential bits
     if ownership:
@@ -76,7 +78,7 @@ def addToDataFile( datafile, color, move, goBoard, ownership, black_ownership, w
         elif color =='w':
             to_move_ownership = white_ownership
 
-        flattened_targets = [to_move_ownership[i][j] for i in xrange(board_size) for j in xrange(board_size)]
+        flattened_targets = [to_move_ownership[i][j] for i in range(board_size) for j in range(board_size)]
         num_bytes = bit_writer.write_sequence(flattened_targets, datafile)
 
     #The 8 board feature planes are encoded by sequential bytes, one byte per position on the board
@@ -101,7 +103,7 @@ def addToDataFile( datafile, color, move, goBoard, ownership, black_ownership, w
             if goBoard.isSimpleKo( color, pos ):
                 thisbyte = thisbyte | 64
             thisbyte = thisbyte | 128
-            datafile.write( chr(thisbyte) )
+            datafile.write( thisbyte.to_bytes(1, 'big'))
 
 #sgfContects - str with the contents of the sgf file to parse
 #sgf_file_path - str, path to the sgf file
@@ -109,17 +111,17 @@ def addToDataFile( datafile, color, move, goBoard, ownership, black_ownership, w
 #
 #walk through the sgf file and write the binary samples to output_file_path
 def walkthroughSgf( sgf_contents , sgf_file_path, sgf_file_name,  output_file_path, completed_dir, board_size, ownership):
-    sgf = gomill.sgf.Sgf_game.from_string( sgf_contents )
+    sgf = sgfmill.sgf.Sgf_game.from_string( sgf_contents )
     try:
         if sgf.get_size() != board_size:
-            print ('boardsize not %d, ignoring' %board_size )
+            print(('boardsize not %d, ignoring' %board_size ))
             return
         goBoard = GoBoard.GoBoard(board_size)
         if sgf.get_handicap() != None and sgf.get_handicap() != 0:
-            print 'handicap not zero, ignoring (' + str( sgf.get_handicap() ) + ')'
+            print(('handicap not zero, ignoring (' + str( sgf.get_handicap() ) + ')'))
             return
     except:
-        print "Error getting handicap. Ignoring this file"
+        print("Error getting handicap. Ignoring this file")
         return
     moveIdx = 0
 
@@ -132,7 +134,7 @@ def walkthroughSgf( sgf_contents , sgf_file_path, sgf_file_name,  output_file_pa
         black_ownership, white_ownership = finish_games.finish_sgf_and_get_ownership(sgf_file_path, sgf_file_name, completed_dir,
             board_size, difference_threshold = 6, year_lowerbound = 0) #set year_lowerbound will ignore all games before given year
         if black_ownership is None or white_ownership is None:
-            print "Unable to get final ownership for %s" %sgf_file_path
+            print(("Unable to get final ownership for %s" %sgf_file_path))
             return
 
     #all samples from this sgf will be written to this file
@@ -146,8 +148,8 @@ def walkthroughSgf( sgf_contents , sgf_file_path, sgf_file_name,  output_file_pa
             try:
                 goBoard.applyMove( color, (row,col) )
             except:
-                print "exception caught at move %d" %(moveIdx)
-                print "Ignoring the rest of this file"
+                print(("exception caught at move %d" %(moveIdx)))
+                print("Ignoring the rest of this file")
                 output_file.close()
                 return
             moveIdx = moveIdx + 1
@@ -162,15 +164,12 @@ def munge_sgf( sgf_file_path, sgf_file_name, output_file_path, completed_dir, bo
     sgf_file = open( sgf_file_path, 'r' )
     contents = sgf_file.read()
     sgf_file.close()
-
-    if contents.find( 'SZ[%d]' %board_size ) < 0:
-        print( 'not %dx%d, skipping: %s' %(board_size, board_size, sgf_file_path))
     try:
         walkthroughSgf( contents , sgf_file_path, sgf_file_name, output_file_path, completed_dir, board_size, ownership)
     except:
-        print( "Weird exception happened caught for file " + path.abspath( sgf_file_path ) )
-        print sys.exc_info()[0]
-        print "Terminating the munging..."
+        print(( "Weird exception happened caught for file " + path.abspath( sgf_file_path ) ))
+        print((sys.exc_info()[0]))
+        print("Terminating the munging...")
         raise 
     #print( sgf_file_path )
 
@@ -183,23 +182,23 @@ def munge_all_sgfs( input_dir, output_dir, completed_dir, board_size, ownership)
         for file in files:
             filepath = subdir + os.sep + file
             if file_count % 1000 == 0:
-                print file_count
+                print(file_count)
             if filepath.endswith(".sgf"):
                 output_file_path = output_dir + os.sep + file[:-4] + ".dat"
                 if os.path.isfile(output_file_path):
-                    print "File already exists: %s" %output_file_path
+                    print(("File already exists: %s" %output_file_path))
                     continue
                 munge_sgf(filepath, file, output_file_path, completed_dir, board_size, ownership)
                 file_count+=1
-    print "There were %d files" %(file_count)
+    print(("There were %d files" %(file_count)))
     if file_count == 0:
-        print "No sgf_files were found in the directory, nothing to do."
+        print("No sgf_files were found in the directory, nothing to do.")
     else:
         if not os.path.exists(output_dir):
-            print "%s not found, creating it" %output_dir
+            print(("%s not found, creating it" %output_dir))
             os.mkdir(output_dir)
         if not os.path.exists(completed_dir):
-            print "%s not found, creating it" %completed_dir
+            print(("%s not found, creating it" %completed_dir))
             os.mkdir(completed_dir)
 
 
@@ -209,7 +208,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     #settings for munging
-    parser.add_argument('-i', '--input_dir', dest='input_dir', type=str, default='./data/sgf_files', help='directory containing sgf files as inputk')
+    parser.add_argument('-i', '--input_dir', dest='input_dir', type=str, default='./data/input', help='directory containing sgf files as input')
     parser.add_argument('-o', '--output_dir', dest='output_dir', type=str, default='./data/input_samples_all', help='output directory to write processed binary files to')
     parser.add_argument('-c', '--completed_dir', dest='completed_dir', default='./data/completed_sgf_files', help='directory to save gnugo completed sgf files (with ownership info)')
     parser.add_argument('-b' '--board_size', dest='board_size', type=int, default=19, help='board size')
@@ -218,7 +217,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     params = vars(args)
-    print json.dumps(params, indent =2)
+    print((json.dumps(params, indent =2)))
 
     input_dir = params["input_dir"]
     output_dir = params["output_dir"]

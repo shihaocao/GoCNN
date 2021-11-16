@@ -11,11 +11,11 @@ def write_sequence(sequence, datafile):
 		bit_pos *= 2
 		if bit_pos >= 256:
 			bit_pos = 1
-			datafile.write(chr(this_byte))
+			datafile.write(this_byte.to_bytes(1, 'big'))
 			num_bytes += 1
 			this_byte = 0
 	if bit_pos > 1:
-		datafile.write(chr(this_byte))
+		datafile.write(this_byte.to_bytes(1, 'big'))
 		num_bytes += 1
 	return num_bytes
 

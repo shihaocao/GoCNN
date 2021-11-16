@@ -4,8 +4,8 @@
 # v. 2.0. If a copy of the MPL was not distributed with this file, You can 
 # obtain one at http://mozilla.org/MPL/2.0/.
 
-import GoString
-import Bag2d
+from . import GoString
+from . import Bag2d
 import numpy as np
 
 # a go board, can apply moves to it, contains gostrings, including their pieces, liberties etc
@@ -47,7 +47,7 @@ class GoBoard(object):
         (row,col) = pos
         if row < 0 or col < 0 or row >= self.boardSize or col >= self.boardSize:
             return
-        if not self.board.has_key(pos):
+        if pos not in self.board:
             pointString.addLiberty(pos)
 
     # dont attempt to merge yet
@@ -128,8 +128,8 @@ class GoBoard(object):
                     self.addLibertyToAdjacentString( adjstring, enemypos, playColor )
 
     def applyMove( self, playColor, pos ):
-        if self.board.has_key(pos):
-           raise( "violated expectation: board[row][col] ==0, at " + str(pos) )
+        if pos in self.board:
+           raise "violated expectation: board[row][col] ==0, at "
 
         self.ko_lastMoveNumCaptured = 0;
 
@@ -161,7 +161,7 @@ class GoBoard(object):
         (row,col) = pos
         if row < 0 or col < 0 or row > self.boardSize - 1 or col > self.boardSize - 1:
             return
-        if( not self.board.has_key(pos) ):
+        if( pos not in self.board ):
             goString.insertLiberty(pos)
 
     def foldStringIfOurs( self, string2, color, pos, joinpos ):

@@ -4,7 +4,7 @@ import numpy as np
 BOARD_SIZE = 19
 
 def weight_variable(shape):
-  initial = tf.truncated_normal(shape, stddev=0.1)
+  initial = tf.random.truncated_normal(shape, stddev=0.1)
   return tf.Variable(initial)
  
 def bias_variable(shape):
@@ -12,12 +12,13 @@ def bias_variable(shape):
   return tf.Variable(initial)
  
 def conv2d(x, W):
-  return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+  return tf.nn.conv2d(input=x, filters=W, strides=[1, 1, 1, 1], padding='SAME')
 
 def place_holders():
-	x = tf.placeholder("float", shape=[None, BOARD_SIZE, BOARD_SIZE , 8])
-	ownership = tf.placeholder("float", shape=[None, BOARD_SIZE**2])
+	x = tf.compat.v1.placeholder("float", shape=[None, BOARD_SIZE, BOARD_SIZE , 8])
+	ownership = tf.compat.v1.placeholder("float", shape=[None, BOARD_SIZE**2])
 	return x, ownership
+
 def model(x):
 
 	x_board = tf.reshape(x, [-1, BOARD_SIZE, BOARD_SIZE, 8])
@@ -50,9 +51,9 @@ def model(x):
 	return pred_ownership
 
 def loss_function(y_pred, y_true):
-	loss = tf.reduce_mean(tf.pow(y_pred - y_true, 2))
+	loss = tf.reduce_mean(input_tensor=tf.pow(y_pred - y_true, 2))
 	return loss
 
 def train_step(loss):
-	return tf.train.AdamOptimizer(1e-4).minimize(loss)
+	return tf.compat.v1.train.AdamOptimizer(1e-4).minimize(loss)
 

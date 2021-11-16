@@ -208,7 +208,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     #settings for munging
-    parser.add_argument('-i', '--input_dir', dest='input_dir', type=str, default='./data/input', help='directory containing sgf files as input')
+    parser.add_argument('-i', '--input_dir', dest='input_dir', type=str, default='./data/games-flattened', help='directory containing sgf files as input')
     parser.add_argument('-o', '--output_dir', dest='output_dir', type=str, default='./data/input_samples_all', help='output directory to write processed binary files to')
     parser.add_argument('-c', '--completed_dir', dest='completed_dir', default='./data/completed_sgf_files', help='directory to save gnugo completed sgf files (with ownership info)')
     parser.add_argument('-b' '--board_size', dest='board_size', type=int, default=19, help='board size')

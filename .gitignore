@@ -5,6 +5,8 @@
 *.log
 *.sgf
 *.sgfc
+*.bak
+*.pyc
 
 future/
 checkpoint
